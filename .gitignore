@@ -1,0 +1,34 @@
+# macOS
+.DS_Store
+
+# R
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# Input data
+data/
+input/
+
+# Reference files
+reference/
+
+# Generated analysis outputs
+results/
+Homologous_Analysis_DarmorV10/
+
+# Temporary files
+tmp/
+*.tmp
+*.log
+
+# Excel temporary files
+~$*.xlsx
+
+# R application history
+.Rapp.history
+*.Rapp.history
+
+# Original/local scripts not included in the public workflow
+Scripts originals/
