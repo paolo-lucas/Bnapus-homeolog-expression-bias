@@ -2,6 +2,8 @@ cff-version: 1.2.0
 message: "If you use this workflow, please cite this repository and the associated publication when available."
 title: "Brassica napus homoeolog expression bias workflow"
 type: software
+version: "1.0.0"
+date-released: 2026-10-07
 authors:
   - family-names: "Rodrigues-Silva"
     given-names: "Paolo Lucas"
