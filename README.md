@@ -1,4 +1,4 @@
-# *Brassica napus* Homoeolog Expression Bias Workflow
+# *Brassica napus* homoeolog expression bias workflow
 
 This repository contains the analysis workflow used to identify BnA–BnC homoeologous gene pairs in *Brassica napus* cv. Darmor-bzh v10 and to evaluate subgenome-specific expression and homoeolog expression bias (HEB) using TPM-normalized RNA-seq data.
 
