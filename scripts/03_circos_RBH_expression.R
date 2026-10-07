@@ -49,7 +49,7 @@ REFERENCE_DIR <- Sys.getenv(
 
 TPM_PATH <- Sys.getenv(
   "TPM_PATH",
-  unset = "./input/tpm_counts.xlsx"
+  unset = "./data/tpm_counts.xlsx"
 )
 
 OUT_DIR <- Sys.getenv(
@@ -182,8 +182,7 @@ for (lin in lineages) {
   # 5.1 Filter expressed genes
   genes_expressed <- tpm_data %>%
     select(GeneID, starts_with(lin)) %>%
-    mutate(Total_TPM = rowSums(across(where(is.numeric)))) %>%
-    filter(Total_TPM >= 1) %>%
+    filter(rowSums(select(., -GeneID) >= 1) > 0) %>%
     pull(GeneID)
   
   # 5.2 Filter RBH pairs

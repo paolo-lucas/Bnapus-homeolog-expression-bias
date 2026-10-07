@@ -324,8 +324,7 @@ generate_bias_histogram <- function(df, lineage_name, out_path) {
         ": Subgenome Expression Bias Distribution"
       ),
       y = "Number of Gene Pairs",
-      x = expression(
-        log[2] ~ (Expression[A] / Expression[C])
+      x = expression(log[2] ~ "A/C expression ratio")
       )
     ) +
     theme_classic(
@@ -519,10 +518,6 @@ generate_global_dosage_dotplot <- function(
     scale_y_continuous(
       labels = percent_format(
         accuracy = 1
-      ),
-      limits = c(
-        0.48,
-        0.52
       )
     ) +
     geom_hline(

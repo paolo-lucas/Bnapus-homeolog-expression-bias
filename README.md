@@ -2,7 +2,7 @@
 
 This repository contains the analysis workflow used to identify BnA–BnC homoeologous gene pairs in *Brassica napus* cv. Darmor-bzh v10 and to evaluate subgenome-specific expression and homoeolog expression bias (HEB) using TPM-normalized RNA-seq data.
 
-The workflow combines Reciprocal Best Hit (RBH) identification, expression filtering, chromosome-scale visualization, homoeolog expression bias classification, transcriptomic dosage analysis, bias-transition visualization, and identification of core homoeologous pairs with bias changes across lineages/genotypes.
+The workflow combines Reciprocal Best Hit (RBH) identification, expression filtering, chromosome-scale visualization, homoeolog expression bias classification, transcriptomic dosage analysis, bias-transition visualization, and identification of homoeologous pairs with bias changes shared across lineages/genotypes.
 
 ## Workflow overview
 
@@ -13,7 +13,7 @@ flowchart TD
     B --> S2[02 Reciprocal Best Hit identification]
     S2 --> R[RBH_pairs.tsv]
 
-    R --> S3[03 Circos and orthology matrix]
+    R --> S3[03 Expression-filtered RBH Circos and orthology matrix]
     G[Darmor-bzh v10 GFF3] --> S3
     T[TPM expression matrix] --> S3
 
@@ -31,13 +31,15 @@ flowchart TD
     O[Optional gene annotation] --> S8
 ```
 
-Scripts 01–02 define BnA–BnC RBH pairs. Script 03 visualizes expressed RBH pairs. Script 04 is an independent expression-overlap analysis based on BnA and BnC gene identifiers in the TPM matrix. Scripts 05–08 use the RBH-based homoeolog pairs for HEB and downstream analyses.
+Scripts 01–02 define BnA–BnC RBH pairs. Script 03 visualizes expressed RBH pairs. Script 04 is an independent expression-overlap analysis based directly on BnA and BnC gene identifiers in the TPM matrix. Scripts 05–08 use the RBH-based homoeolog pairs for HEB and downstream analyses.
 
 ## Repository structure
 
 ```text
 Bnapus-homeolog-expression-bias/
 ├── README.md
+├── LICENSE
+├── CITATION.cff
 ├── .gitignore
 └── scripts/
     ├── 01_prepare_reference_and_BLAST.sh
@@ -56,7 +58,7 @@ Input data, reference files, intermediate files, and generated results are inten
 
 The workflow was developed using the *Brassica napus* cv. Darmor-bzh v10 reference.
 
-The required reference files are available from BnaOmics:
+Reference files are available from BnaOmics:
 
 https://bnaomics.ocri-genomics.net/download/public/reference-genome-sequences-and-gene-annotation/B_napus_cv_Darmor_bzh/v10/
 
@@ -81,7 +83,7 @@ Script 01 requires:
 - NCBI BLAST+ (`blastp` and `makeblastdb`)
 - `pv`
 
-On macOS with Homebrew, these can be installed with:
+On macOS with Homebrew:
 
 ```bash
 brew install blast
@@ -89,8 +91,6 @@ brew install pv
 ```
 
 ### R packages
-
-The R scripts use the following packages:
 
 ```r
 install.packages(c(
@@ -107,13 +107,13 @@ install.packages(c(
 ))
 ```
 
-Individual scripts only load the packages needed for that analysis.
+Individual scripts only load the packages required for that analysis.
 
 ## Input expression matrix
 
 Scripts 03–06 require a TPM-normalized expression matrix in Excel format (`.xlsx`).
 
-The first column must contain Darmor-bzh v10 gene identifiers. The scripts rename this first column internally to `GeneID` or `gene.id`, so its original column name is not important.
+The first column must contain Darmor-bzh v10 gene identifiers. The scripts rename this column internally to `GeneID` or `gene.id`, so its original column name is not important.
 
 A simplified example is:
 
@@ -151,13 +151,27 @@ These patterns can be changed in the scripts if a different naming convention is
 
 Names such as `rep1_Line1` will not be selected by scripts that use the lineage name as a column prefix.
 
-For the paired HEB test in script 05, BnA and BnC expression values are compared within the same biological samples. Missing values are removed pairwise before the paired test.
+For the paired HEB test in script 05, BnA and BnC expression values are compared within the same biological sample. Missing observations are removed pairwise before testing.
+
+## Expression-filtering rules
+
+Expression filtering is used to reduce contributions from very low-abundance signals.
+
+For scripts 03 and 04, a gene is considered expressed within a lineage/genotype when:
+
+```text
+TPM >= 1 in at least one sample belonging to that lineage/genotype
+```
+
+In script 03, both members of an RBH pair must independently satisfy this expression criterion for the pair to be retained for Circos and orthology-matrix visualization.
+
+Script 05 uses a separate pair-level inclusion criterion for HEB analysis: an RBH pair is retained when at least one homoeolog has mean TPM ≥ 1 in at least one of the two experimental conditions.
 
 ## Running the workflow
 
 Run the scripts from the repository root unless custom paths are supplied through environment variables.
 
-The commands below assume:
+The examples below assume:
 
 ```text
 reference/
@@ -182,7 +196,7 @@ This script:
 
 1. decompresses the Darmor-bzh v10 protein FASTA;
 2. separates BnA and BnC sequences according to FASTA identifiers;
-3. retains sequences matching the `.1` isoform;
+3. retains the `.1` protein isoform;
 4. creates separate BLAST protein databases;
 5. performs BnA → BnC and BnC → BnA BLASTp searches.
 
@@ -229,7 +243,7 @@ This script identifies BnA–BnC RBH pairs from the bidirectional BLASTp results
 The analysis:
 
 - retains hits with sequence identity ≥ 70%;
-- selects the highest-bitscore hit for each query;
+- retains the highest-bitscore hit(s) for each query;
 - identifies reciprocal best hits between BnA and BnC;
 - exports best hits, RBH pairs, and summary statistics.
 
@@ -263,6 +277,8 @@ evalue
 RBH
 ```
 
+> **Note:** the current implementation uses `dplyr::slice_max(bitscore, n = 1)` with its default tie handling, so exact highest-bitscore ties may be retained.
+
 ---
 
 ## 03 — Expression-filtered RBH Circos plots and orthology matrix
@@ -277,7 +293,9 @@ This script combines:
 - the Darmor-bzh v10 GFF3 annotation;
 - the TPM expression matrix.
 
-For each lineage/genotype, it retains RBH pairs for which both homoeologs are expressed and located on the main BnA/BnC chromosomes.
+For each lineage/genotype, a gene is considered expressed when TPM ≥ 1 in at least one sample belonging to that lineage/genotype.
+
+An RBH pair is retained only when both the BnA and BnC homoeolog independently meet this criterion and are located on the main BnA/BnC chromosomes.
 
 The script generates:
 
@@ -286,14 +304,14 @@ The script generates:
 - an orthology matrix showing the number of expressed RBH pairs for each BnA–BnC chromosome combination;
 - an Excel table containing the expressed RBH pairs.
 
-Default input paths include:
+Required input paths include:
 
 ```text
 ./reference/BnapusDarmor-bzh_annotation.gff.gz
 ./Homologous_Analysis_DarmorV10/results/Final_results/RBH_pairs.tsv
 ```
 
-The TPM path can be provided explicitly:
+Run with:
 
 ```bash
 TPM_PATH=./data/tpm_counts.xlsx \
@@ -314,7 +332,7 @@ lineages <- c("Line1", "Line2", "Line3")
 scripts/04_venn_expressed_homeologs.R
 ```
 
-This script identifies genes with TPM ≥ 1 in at least one sample of each lineage and generates separate Venn diagrams for BnA and BnC genes.
+This script identifies genes with TPM ≥ 1 in at least one sample of each lineage/genotype and generates separate Venn diagrams for BnA and BnC genes.
 
 Run:
 
@@ -331,9 +349,9 @@ results/Venn_expressed_genes/
 └── Venn_Subgenome_C_TPM.png
 ```
 
-> **Important:** this script separates genes according to BnA/BnC gene identifiers in the TPM matrix and does **not** restrict the analysis to the RBH pairs identified by script 02. It therefore represents overlap among expressed BnA and BnC genes, rather than overlap among RBH-filtered homoeologous pairs.
+> **Important:** this script separates genes according to BnA/BnC gene identifiers in the TPM matrix and does **not** restrict the analysis to the RBH pairs identified by script 02. It therefore represents overlap among expressed BnA and BnC genes rather than overlap among RBH-filtered homoeologous pairs.
 
-> **Note:** the Venn diagram script is currently optimized and color-coded for comparing exactly 3 lineages/genotypes.
+> **Note:** the Venn diagram script is currently optimized and color-coded for exactly 3 lineages/genotypes.
 
 ---
 
@@ -349,13 +367,17 @@ For each lineage/genotype, the script:
 
 1. selects Unprimed and Primed samples;
 2. matches BnA and BnC genes using `RBH_pairs.tsv`;
-3. retains homoeologous pairs with detectable expression;
+3. retains RBH pairs for which at least one homoeolog has mean TPM ≥ 1 in at least one condition;
 4. calculates mean BnA and BnC TPM;
 5. calculates:
 
 ```text
 log2((Mean_A + 1) / (Mean_C + 1))
 ```
+
+The pseudocount of `+1` prevents undefined or infinite log2 ratios when one homoeolog has zero expression.
+
+The script then:
 
 6. performs a paired Student's t-test on `log2(TPM + 1)` values from corresponding BnA and BnC measurements;
 7. applies Benjamini–Hochberg multiple-testing correction;
@@ -408,21 +430,21 @@ This script generates two complementary analyses.
 
 ### Bias distribution
 
-The histograms use the `LFC_UP` and `LFC_P` values calculated by script 05. The log2 ratios are therefore not recalculated in this step.
+The histograms use the `LFC_UP` and `LFC_P` values already calculated by script 05. The log2 ratios are **not recalculated** in script 06, and no additional pseudocount is applied.
 
-The histograms display the distribution of:
+The values plotted therefore correspond to:
 
 ```text
-log2(Expression_A / Expression_C)
+log2((Mean_A + 1) / (Mean_C + 1))
 ```
 
-and color the observations according to `A bias`, `C bias`, or `No bias`.
+Observations are colored according to `A bias`, `C bias`, or `No bias`.
 
 The script also compares the numbers of A-biased and C-biased pairs within each condition using a chi-squared test.
 
 ### Global transcriptomic dosage
 
-Global transcriptomic dosage is calculated independently from the RBH-filtered data.
+Global transcriptomic dosage is calculated independently from the RBH-filtered data and does not use the `+1` pseudocount.
 
 For every biological sample:
 
@@ -517,7 +539,7 @@ Stable_vs_Changed
 scripts/08_core_bias_transition_pairs.R
 ```
 
-This is an optional downstream analysis for identifying homoeologous pairs whose bias classification changes between Unprimed and Primed conditions across all three lineages/genotypes.
+This optional downstream analysis identifies homoeologous pairs whose bias classification changes between Unprimed and Primed conditions across all three lineages/genotypes.
 
 The script:
 
@@ -525,15 +547,17 @@ The script:
 2. compares them using a Venn diagram;
 3. identifies the intersection present in all lineages;
 4. generates a heatmap of `LFC_UP` and `LFC_P` values for the core pairs;
-5. calculates the magnitude of each transition:
+5. calculates transition magnitude:
 
 ```text
 Delta_Lineage = |LFC_P - LFC_UP|
 ```
 
 6. calculates `Mean_Delta`;
-7. classifies the direction of change across lineages as `Consistent`, `Divergent`, or `Incomplete`;
-8. exports candidate/core-pair tables.
+7. classifies the direction of quantitative LFC change across lineages as `Consistent`, `Divergent`, or `Incomplete`;
+8. exports changed-pair lists, the core intersection, and candidate/core-pair tables.
+
+Here, **core** means that the pair changes bias state in all analyzed lineages. It does not necessarily mean that all lineages undergo the same categorical transition.
 
 Run:
 
@@ -575,8 +599,6 @@ If no common changed pairs are identified, the heatmap and candidate table are s
 
 The scripts do not all need to be run strictly from 01 to 08.
 
-The main dependencies are:
-
 ```text
 01 -> 02
 
@@ -593,7 +615,7 @@ TPM -> 04
 05 -> 08
 ```
 
-Therefore, scripts 06–08 can be run independently after script 05 has generated the `Bias_Analysis_<Lineage>.xlsx` files.
+Scripts 06–08 can therefore be run independently after script 05 has generated the `Bias_Analysis_<Lineage>.xlsx` files.
 
 ## Environment variables
 
@@ -629,14 +651,17 @@ The lineage names and condition patterns are currently defined inside the R scri
 
 - Gene identifiers are expected to follow the Darmor-bzh v10 naming convention used by the reference files.
 - BnA genes are identified by IDs beginning with `A`; BnC genes are identified by IDs beginning with `C`.
-- Script 01 retains protein FASTA entries matching `.1` after subgenome separation.
-- Script 02 uses a minimum BLAST sequence identity of 70% and selects the highest-bitscore hit for each query before identifying reciprocal hits.
-- Script 04 evaluates expressed BnA/BnC genes directly from the TPM matrix; it is not restricted to RBH pairs.
+- Script 01 retains the `.1` protein isoform after subgenome separation.
+- Script 02 uses a minimum BLAST sequence identity of 70%; exact highest-bitscore ties may be retained.
+- Scripts 03 and 04 define an expressed gene as TPM ≥ 1 in at least one sample of the corresponding lineage/genotype.
+- In script 03, both homoeologs of an RBH pair must independently satisfy this expression criterion.
+- Script 04 evaluates expressed BnA/BnC genes directly from the TPM matrix and is not restricted to RBH pairs.
 - Script 04 is currently optimized and color-coded for exactly 3 lineages/genotypes.
 - Scripts 05–08 assume sample-column names begin with the lineage/genotype prefix.
 - Scripts 05–06 use `_U` and `_P` by default to distinguish Unprimed and Primed samples.
 - HEB is defined using `|log2FC| > 1` together with Benjamini–Hochberg-adjusted `P < 0.05`.
 - Script 05 uses a paired Student's t-test on `log2(TPM + 1)` values and removes missing observations pairwise.
+- Script 06 plots the LFC values calculated by script 05 rather than recalculating the ratio.
 - Script 06 calculates global transcriptomic dosage from the complete TPM matrix rather than only from RBH-filtered pairs.
 - Script 08 is currently designed for exactly 3 lineages/genotypes.
 - The optional annotation used by script 08 is not required to identify the core intersection.
@@ -651,9 +676,21 @@ Users should provide their own TPM-normalized expression matrix following the in
 
 ## Citation
 
-If you use this workflow, please cite the associated publication.
+Citation metadata are provided in `CITATION.cff`.
 
-Publication details will be added upon publication.
+If you use this workflow, please cite this repository and the associated publication when available.
+
+Publication details will be added after publication.
+
+## License
+
+Copyright © 2026 Paolo Lucas Rodrigues-Silva.
+
+This software is distributed under the **GNU General Public License v3.0 only (GPL-3.0-only)**.
+
+You may use, study, modify, and redistribute the software, including for commercial purposes, under the terms of GPLv3. If you distribute modified or derivative versions covered by the license, the corresponding source code must remain available under GPLv3.
+
+See the `LICENSE` file for the complete license terms.
 
 ## Contact
 

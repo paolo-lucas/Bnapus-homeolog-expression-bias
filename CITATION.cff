@@ -7,6 +7,7 @@ authors:
     given-names: "Paolo Lucas"
 repository-code: "https://github.com/paolo-lucas/Bnapus-homeolog-expression-bias"
 license: "GPL-3.0-only"
+abstract: "Reproducible workflow for identifying BnA-BnC reciprocal best-hit homoeologous gene pairs in Brassica napus cv. Darmor-bzh v10 and analyzing subgenome-specific expression, homoeolog expression bias, transcriptomic dosage, and bias transitions from TPM-normalized RNA-seq data."
 keywords:
   - "Brassica napus"
   - "homoeolog expression bias"
