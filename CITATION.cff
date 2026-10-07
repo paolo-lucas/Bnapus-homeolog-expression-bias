@@ -6,7 +6,7 @@ authors:
   - family-names: "Rodrigues-Silva"
     given-names: "Paolo Lucas"
 repository-code: "https://github.com/paolo-lucas/Bnapus-homeolog-expression-bias"
-license: "MIT"
+license: "GPL-3.0-only"
 keywords:
   - "Brassica napus"
   - "homoeolog expression bias"
