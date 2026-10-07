@@ -325,7 +325,6 @@ generate_bias_histogram <- function(df, lineage_name, out_path) {
       ),
       y = "Number of Gene Pairs",
       x = expression(log[2] ~ "A/C expression ratio")
-      )
     ) +
     theme_classic(
       base_size = 14

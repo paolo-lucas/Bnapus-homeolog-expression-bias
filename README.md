@@ -581,6 +581,8 @@ DarmorV10
 All_Uniprot_Prot
 ```
 
+> **Annotation note:** gene annotation in script 08 is joined using the BnA member of each homoeologous pair (`gene_A`) against the `DarmorV10` column. Therefore, `Gene_name` in the heatmap and final candidate table refers specifically to the **BnA homoeolog**. The corresponding BnC identifier is retained in `GeneID_BnC`, but the BnC member is not independently annotated by this step.
+
 Main outputs include:
 
 ```text
@@ -679,6 +681,8 @@ Users should provide their own TPM-normalized expression matrix following the in
 Citation metadata are provided in `CITATION.cff`.
 
 If you use this workflow, please cite this repository and the associated publication when available.
+
+The first public software release is intended to be archived on Zenodo. Once the Zenodo record is created, the DOI for the archived release will be added to this README and to `CITATION.cff`.
 
 Publication details will be added after publication.
 
