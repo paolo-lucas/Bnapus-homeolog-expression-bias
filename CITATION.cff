@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "If you use this workflow, please cite this repository and the associated publication when available."
+message: "If you use this workflow, please cite this software release and the associated publication when available."
 title: "Brassica napus homoeolog expression bias workflow"
 type: software
 version: "1.0.0"
@@ -8,6 +8,7 @@ authors:
   - family-names: "Rodrigues-Silva"
     given-names: "Paolo Lucas"
 repository-code: "https://github.com/paolo-lucas/Bnapus-homeolog-expression-bias"
+doi: "10.5281/zenodo.23210373"
 license: "GPL-3.0-only"
 abstract: "Reproducible workflow for identifying BnA-BnC reciprocal best-hit homoeologous gene pairs in Brassica napus cv. Darmor-bzh v10 and analyzing subgenome-specific expression, homoeolog expression bias, transcriptomic dosage, and bias transitions from TPM-normalized RNA-seq data."
 keywords:

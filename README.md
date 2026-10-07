@@ -1,5 +1,7 @@
 # *Brassica napus* homoeolog expression bias workflow
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23210373.svg)](https://doi.org/10.5281/zenodo.23210373)
+
 This repository contains the analysis workflow used to identify BnA–BnC homoeologous gene pairs in *Brassica napus* cv. Darmor-bzh v10 and to evaluate subgenome-specific expression and homoeolog expression bias (HEB) using TPM-normalized RNA-seq data.
 
 The workflow combines Reciprocal Best Hit (RBH) identification, expression filtering, chromosome-scale visualization, homoeolog expression bias classification, transcriptomic dosage analysis, bias-transition visualization, and identification of homoeologous pairs with bias changes shared across lineages/genotypes.
@@ -680,9 +682,13 @@ Users should provide their own TPM-normalized expression matrix following the in
 
 Citation metadata are provided in `CITATION.cff`.
 
-If you use this workflow, please cite this repository and the associated publication when available.
+If you use version 1.0.0 of this workflow, please cite the archived software release:
 
-The first public software release is intended to be archived on Zenodo. Once the Zenodo record is created, the DOI for the archived release will be added to this README and to `CITATION.cff`.
+**Rodrigues-Silva, Paolo Lucas. (2026). *Brassica napus homoeolog expression bias workflow* (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.23210373**
+
+DOI: **10.5281/zenodo.23210373**
+
+Please also cite the associated publication when available.
 
 Publication details will be added after publication.
 
